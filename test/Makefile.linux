@@ -1,0 +1,25 @@
+ALL=basic gauss
+
+# dirs
+TST_DIRS=.. ../../vulcmp
+# needed libs
+TST_LIBS=vulcmp vulmat
+
+Z=
+SPACE=$(Z) $(Z)
+TST_DIRS_SEP=$(subst $(SPACE),:,$(TST_DIRS))
+
+CC=gcc $(TST_DIRS:%=-I%) $(TST_DIRS:%=-L%)
+
+all: $(ALL:=.run)
+
+%.run: %.elf
+	LD_LIBRARY_PATH=$(TST_DIRS_SEP) ./$<
+
+%.elf: %.c
+	$(CC) -o $@ $^ $(TST_LIBS:%=-l%)
+
+clean:
+	$(RM) $(ALL:=.elf) $(RESULTS)
+
+.PRECIOUS: $(ALL:=.elf)

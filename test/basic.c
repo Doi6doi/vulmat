@@ -1,4 +1,4 @@
-#include "dump.h"
+#include "vulmat.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,10 +11,7 @@ int main() {
       f[i*5+i] = 0;
       f[i*5+(4-i)] = i;
    }
-//   VmtMatrix m2 = vmt_matrix_create( 5, 5 );
-//   dump( m3 );
-//   vmt_matrix_gauss( m, m2 );
-   dump( m );
+   vmt_matrix_dump( m );
    vmt_done();
    vcp_done(v);
 }

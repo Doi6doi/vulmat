@@ -1,5 +1,4 @@
 #include "vulmat.h"
-#include "dump.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,7 +16,7 @@ int main() {
    bool ret = vmt_matrix_gauss( m, result, 0 );
    if ( ret ) {
       printf("result: \n");
-      dump( result );
+      vmt_matrix_dump( result );
    } else {
       printf("not invertible\n");
    }

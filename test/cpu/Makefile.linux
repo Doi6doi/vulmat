@@ -1,0 +1,21 @@
+ALL=gauss
+
+# dirs
+TST_DIRS=.. ../../vulcmp
+# needed libs
+TST_LIBS=vulcmp vulmat
+
+CC=gcc
+
+all: $(ALL:=.run)
+
+%.run: %.elf
+	./$<
+
+%.elf: %.c vmc.c
+	$(CC) -o $@ $^
+
+clean:
+	$(RM) $(ALL:=.elf) $(RESULTS)
+
+.PRECIOUS: $(ALL:=.elf)

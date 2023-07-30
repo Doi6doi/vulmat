@@ -1,6 +1,6 @@
 *.o
 *.inc
-Makefile
+./Makefile
 libvulmat.so
 megsem
 **/ide.txt
