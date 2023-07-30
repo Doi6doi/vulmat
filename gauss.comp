@@ -1,0 +1,112 @@
+#version 450
+
+layout (local_size_x=16, local_size_y=1, local_size_z=1) in;
+
+layout( binding = 0 ) buffer Data {
+   /// size
+   uint n;
+   /// termination
+   bool quit;
+   /// elimination phase
+   uint phase;
+   /// chosen row
+   uint best;
+   /// epsilon value for zero check
+   float epsilon;
+   /// pivot value
+   float pivot;
+};
+
+layout( binding = 1 ) buffer Base {
+   float base[];
+};
+
+layout( binding = 2 ) buffer Result {
+   float result[];
+};
+
+/// identity matrix in result
+void ident() {
+   uint x = gl_GlobalInvocationID.x;
+   uint y = gl_GlobalInvocationID.y;
+   if ( n <= x && x < 2*n )
+      result[ y*n+x-n ] = (x-n == y ? 1.0: 0.0 );
+}   
+
+/// find best element in column and inc phase
+void search() {
+   if ( uvec2(0,0) != gl_GlobalInvocationID.xy )
+      return;
+   uint x = ++ phase;
+   for (uint i=x; i<n; ++i) {
+      float p = base[i*n+x];
+      if (epsilon < abs(p)) {
+         best = i;
+         pivot = p;
+         return;
+      }
+   }
+   quit = true;
+}
+
+/// swap best row to phaseth and divide
+void swap() {
+   if ( 0 != gl_GlobalInvocationID.y ) return;
+   uint y = phase;
+   uint x = gl_GlobalInvocationID.x;
+   if ( x < y || 2*n <= x ) return;
+   if ( x < n ) {
+      if ( best == y ) {
+         base[y*n+x] /= pivot;
+      } else {
+         float save = base[y*n+x];
+         base[y*n+x] = base[best*n+x]/pivot;
+         base[best*n+x] = save;
+      }
+   } else {
+      uint j = x-n;
+      if ( best == y ) {
+         result[y*n+j] /= pivot;
+      } else {
+         float save = result[y*n+j];
+         result[y*n+j] = result[best*n+j]/pivot;
+         result[best*n+j] = save;
+      }
+   }
+}
+
+/// chnage most elements
+void change() {
+   uint p = phase;
+   uint x = gl_GlobalInvocationID.x;
+   if ( x <= p || 2*n <= x ) return;
+   uint y = gl_GlobalInvocationID.y;
+   if ( p == y || n <= y ) return;
+   float q = base[ y*n+p ];
+   if ( x < n ) {
+      base[ y*n+x ] -= base[ p*n+x ]*q;
+   } else {
+      uint j = x-n;
+      result[ y*n+j ] -= result[ p*n+j ]*q;
+   } 
+}
+
+/// change phaseth col elements
+void changeCol() {
+   uint x = phase;
+   uint y = gl_GlobalInvocationID.x;
+   if ( y == x || y >= n ) return;
+   base[ y*n+x ] = 0;
+}
+
+
+void main() {
+   if ( quit ) return;
+   switch ( gl_GlobalInvocationID.z ) {
+      case 0: ident(); break;
+      case 1: search(); break;
+      case 2: swap(); break;
+      case 3: change(); break;
+      case 4: changeCol(); break;
+   }
+}

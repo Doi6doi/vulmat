@@ -1,0 +1,20 @@
+#version 450
+
+layout( binding = 0 ) readonly buffer Dimensions {
+   uint w, h;
+};
+
+layout( binding = 1 ) writeonly buffer Values {
+   float vals[];
+};
+
+void main() {
+
+   uint x = gl_GlobalInvocationID.x;
+   uint y = gl_GlobalInvocationID.y;
+  
+   uint i = y*w+x;
+   if ( x == y )
+      vals[i] = 1;
+      else vals[i] = 0;
+}

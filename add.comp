@@ -1,0 +1,20 @@
+#version 450
+
+layout( binding = 0 ) readonly buffer Dimensions {
+   uint w, h;
+};
+
+layout( binding = 1 ) buffer Base {
+   float base[];
+};
+
+layout( binding = 2 ) readonly buffer Delta {
+   float delta[];
+};
+
+void main() {
+   uint x = gl_GlobalInvocationID.x;
+   uint y = gl_GlobalInvocationID.y;
+   uint i = y*w+x;
+   base[i] += delta[i];
+}

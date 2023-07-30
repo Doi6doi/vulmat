@@ -1,0 +1,6 @@
+*.o
+*.inc
+Makefile
+libvulmat.so
+megsem
+**/ide.txt
