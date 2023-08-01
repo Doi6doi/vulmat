@@ -101,106 +101,70 @@ Matrix subtraction. Matrix dimensions must match.
 ```c
 void vmt_matrix_mult( VmtMatrix left, VmtMatrix right, VmtMatrix result )
 ```
-Matrix multiplication. Matrix dimensions must match.
-- `base`: base matrix. It will change with `delta`
-- `delta`: the matrix which will be subtracted from `base`
+Matrix multiplication. The following values must be equal:
+    `left.width` = `right.height`
+    `left.height` = `result.height`
+    `right.width` = `result.width`
+- `left`: left matrix of multiplication
+- `right`: right matrix of multiplication
+- `result`: result matrix
 
-
-
+---
+```c
+bool vmt_matrix_gauss( VmtMatrix m, VmtMatrix result, float epsilon )
 ```
-Wait for task to terminate.
-- `t`: task handle
-- `timeoutMsec`: maximum number of milliseconds to wait. If 0, returns immediately
-- *returns* true is task ends in `timeoutMsec` or if an error occured
-
-## Less important types
-
-- `VcpStr`: shorthand for const char *
-- `VcpFlag`: [initialization flag](#initialization-flags)
-- `VcpPart`: struct used to run task for given parts of space
-    - `baseX`,`baseY`,`baseZ`: coorindates of starting group
-    - `countX`,`countY`,`countZ`: sizes of area to run task on
-- `VcpScorer`: function which returns a score for an object to help vulcmp select the best. 
- Larger value is better, less than zero value means object is not suitable, so it wont be selected
+Matrix inversion with gauss elimination. 
+- `m`: matrix to find inverse for
+- `result`: inverse matrix if found
+- `epsilon`: float precision can result in false inverses. A positive epsilon (for comparision to zero) can exclude those.
+- *returns* true if inverse is found
 
 ## Less important functions
 
 ```c
-void vcp_check_fail()
+void vmt_check_fail()
 ```
-Checks last error code (*vcp_error*) and terminates program with an error message if it was not *VCP_SUCCESS* or *VCP_TIMEOUT*.
+Checks last error code (*vmt_error*) and terminates program with an error message if it was not *VMT_SUCCESS*.
 
 ---
 ```c
-void vcp_task_parts( VcpTask t, uint32_t nparts, VcpPart * parts );
+void vmt_matrix_free( VmtMatrix m )
 ```
-Setup task to run in parts. Parts will run after each other, with memory barrier between them.
-- `t`: task handle
-- `nparts`: number of parts to run (count of `parts` array)
-- `parts`: the parts to run in given order
----
-```c
-VcpTask vcp_task_create_file( VcpVulcomp v, VcpStr filename, VcpStr entry, uint32_t nstorage )
-```
-Create task directly from a file. Calls *vcp_task_create* after reading whole file to memory.
-- `v`: GPU handle
-- `filename`: filename to load
-- `entry`: task entry point
-- `nstorage`: number of storage buffers accessed by the task
-- `returns` task handle
+Frees resources used by `m`. You usually don't need to call this as vulmat frees up everything on `vmt_done`. It is only needed if you wish to save memory earlier.
+- `m`: matrix to dispose
 
 ---
 ```c
-void vcp_select_physical( VcpVulcomp v, VcpScorer s )
+VmtMatrix vmt_matrix_clone( VmtMatrix m )
 ```
-Selects best physical device for computation.
-- `v`: GPU handle
-- `s`: scorer function for a device (object will be a pointer to [VkPhysicalDevice](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDevice.html))
+Create a clone of `m`.
+- `m`: matric to clone
+- *returns* clone of `m`
 
 ---
 ```c
-void vcp_select_queue( VcpVulcomp v, VcpScorer s)
+VmtMatrix vmt_matrix_ident( uint32_t size )
 ```
-Selects best queue family for computation.
-- `v`: GPU handle
-- `s`: scorer function for a queue family (object will be a pointer to [VkQueueFamilyProperties](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueueFamilyProperties.html))
+Create an identitiy matrix.
+- `size`: width and height of matrix
+- *returns* identity matrix
 
 ---
 ```c
-int vcp_physical_score( void * p )
+void vmt_matrix_transpose( VmtMatrix m, VmtMatrix result )
 ```
-Default score function for a physical device. Prefers discrete, intergated, virtual and cpu types in that order.
-- `p`: the device to be scored. Pointer to [VkPhysicalDevice](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDevice.html)
-- *returns* score of physical device. 
+Transposes a matrix.
+- `m`: original matrix
+- `result`: transposed matrix
 
 ---
 ```c
-int vcp_family_score( void * f )
+void vmt_matrix_rows( VmtMatrix m, uint32_t * indices, VmtMatrix result )
 ```
-Default score function for a queue family. Accepts only compute queues.
-- `f`: the queue family to be scored. Pointer to a [VkQueueFamilyProperties](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkQueueFamilyProperties.html) structure
-- *returns* score of queue famly. 
-
----
-```c
-void vcp_storage_free( VcpStorage s )
-```
-Frees up resources used by `s`. You usually don't need to call this as vulcomp frees up everything on `vcp_done`. It is only needed if you wish to save memory earlier.
-- `s`: storage to dispose
-
----
-```c
-void vcp_task_free( VcpTask t )
-```
-Frees up resources used by `t`. You usually don't need to call this as vulcomp frees up everything on `vcp_done`. It is only needed if you wish to save memory earlier.
-- `t`: task to dispose
-
-## Initialization flags
-
-The following flags can be used in *vcp_init*
-
-- `VCP_VALIDATION`: program will use [Vulkan validation layer](https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Validation_layers) and show validation errors.
-- `VCP_ATOMIC_FLOAT`: request support for atomic float operations
+Permutate rows of matrix
+- `m`: original matrix
+- `indices`: indices of matrix rows (with m.height items)
+- `result`: matrix with permutated rows
 
 ## Error codes
 
@@ -219,23 +183,19 @@ A vulcmp program more or less would have the following structure:
 
 ```c
 // initialize GPU
-VcpVulcomp v = vcp_init( "vcptest", VCP_VALIDATION );
-// allocate GPU memory
-VcpStorage s = vcp_storage_create( v, 320*200*4 );
-// create task
-VcpTask t = vcp_task_create_file( v, "example.spv", "main", 1 );
-// initialize task
-vcp_task_setup( t, &s, 320, 200, 1 );
-// start task
-vcp_task_start( t );
-// check if all went well
-vcp_check_fail();
-// wait for termination
-vcp_task_wait( t, 1000*60 );
-// use result
-void * data = vcp_storage_address( s );
-consume( data );
-// clean up
-vcp_done( v );
+VcpVulcomp v = vcp_init( "vmttest", VCP_VALIDATION );
+// initialize vulmat
+vmt_init( v );
+// create identity matrix
+VmtMatrix m = vmt_matrix_ident( 5 );
+// get elements address
+VmtFloat * f = vmt_matrix_address( m );
+// set an element
+f[ 2*5+1 ] = 2.0;
+// dump matrix
+vmt_matrix_dump( m );
+// finalize
+vmt_done();
+vcp_done(v);
 ```
     
