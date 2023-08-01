@@ -179,7 +179,7 @@ Permutate rows of matrix
 
 ## Example code
    
-A simple vulmat program:
+A simple vulmat program example:
 
 ```c
 // initialize GPU
