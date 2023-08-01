@@ -11,7 +11,7 @@ Works much faster on large matrices than a CPU solution.
 
 ## Important types
 
-- `VmtFloat`: synonim of float. Vulmat uses floats in matrices.
+- `VmtFloat`: synonym of float. Vulmat uses floats in matrices.
 - `VmtMatrix`: opaque type handle for a GPU matrix
 
 ## Important functions
