@@ -179,7 +179,7 @@ Permutate rows of matrix
 
 ## Example code
    
-A vulcmp program more or less would have the following structure:
+A simple vulmat program:
 
 ```c
 // initialize GPU
