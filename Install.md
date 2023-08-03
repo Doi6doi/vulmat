@@ -6,6 +6,12 @@ Run `make -f Makefile.linux` to build *vulmat* library
 
 You can run `make -f Makefile.linux help` to see other possible targets 
 
+## MSVC
+
+Run `nmake /f Makefile.msvc` to build *vulmat* library
+
+You can run `nmake /f Makefile.msvc help` to see other possible targets
+
 # Installation
 
 Copy the resulting library (*.so* or *.dll*) to your default library location.
