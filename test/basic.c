@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 int main() {
-   VcpVulcomp v = vcp_init( "vmtident", VCP_VALIDATION | VCP_ATOMIC_FLOAT );
+   VcpVulcomp v = vcp_init( "vmtident", VCP_VALIDATION );
    vmt_init( v );
    VmtMatrix m = vmt_matrix_ident( 5 );
    VmtFloat * f = vmt_matrix_address( m );

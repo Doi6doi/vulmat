@@ -83,6 +83,7 @@ void vmt_check_fail() {
 }
 
 void vmt_done() {
+   vmtResult = VMT_SUCCESS;
    if ( ! vmtVulmat.started )
       return;
    for ( VmtTask vt = vt_first; vt <= vt_last; ++vt ) {
@@ -92,7 +93,6 @@ void vmt_done() {
       vmtVulmat.tasks[vt] = NULL;
    }
    vmtVulmat.started = false;
-   vmtResult = VMT_SUCCESS;
 }
 
 VmtMatrix vmt_matrix_create( uint32_t width, uint32_t height ) {
@@ -100,6 +100,7 @@ VmtMatrix vmt_matrix_create( uint32_t width, uint32_t height ) {
    VmtMatrix m = VMT_REALLOC( NULL, Vmt_Matrix, 1 );
    if ( ! m ) return NULL;
    uint64_t sz0 = 2*sizeof(uint32_t);
+   vmtResult = VMT_STORAGEERR;
    VcpStorage s0 = vcp_storage_create( vmtVulmat.vulcomp, sz0 );
    if ( ! s0 ) return NULL;
    m->sDims = s0;
@@ -109,6 +110,7 @@ VmtMatrix vmt_matrix_create( uint32_t width, uint32_t height ) {
    uint64_t sz1 = (uint64_t)width*height*sizeof(VmtFloat);
    if ( ! (m->sVals = vcp_storage_create( vmtVulmat.vulcomp, sz1 )))
       return NULL;
+   vmtResult = VMT_NOMEM;
    VmtMatrix * mats = VMT_REALLOC( vmtVulmat.mats, VmtMatrix, vmtVulmat.nmat+1 );
    if ( ! mats ) return NULL;
    mats[ vmtVulmat.nmat++ ] = m;
@@ -164,7 +166,7 @@ bool vmt_setup( VmtTask vt, VcpTask t, VcpStorage * ss, uint32_t w, uint32_t h )
 
 /// execute a task
 void vmt_exec( VmtTask vt, VcpStorage * ss, uint32_t w, uint32_t h ) {
-   vmtResult = VMT_EXECERR;
+   vmtResult = VMT_TASKERR;
    VcpTask t = vmtVulmat.tasks[vt];
    if ( ! t ) {
       t = vcp_task_create( vmtVulmat.vulcomp, tdd[vt], tdl[vt], VMT_MAIN, tds[vt] );
@@ -172,6 +174,7 @@ void vmt_exec( VmtTask vt, VcpStorage * ss, uint32_t w, uint32_t h ) {
       vmtVulmat.tasks[vt] = t;
    }
    if ( ! vmt_setup( vt, t, ss, w, h )) return;
+   vmtResult = VMT_EXECERR;
    vcp_task_start( t );
    while ( ! vcp_task_wait( t, VMT_TICK ))
       ;
@@ -297,12 +300,8 @@ bool vmt_matrix_gauss( VmtMatrix m, VmtMatrix result, float epsilon ) {
    VcpStorage ss[3] = { sh, h->sVals, result->sVals };
    vmt_exec( vt_gauss, ss, n, n );
    f = vcp_storage_address( sh );
-//   printf( "n:%d quit:%d phase:%d best:%d pivot:%.3g\n", f[0], f[1], f[2], f[3], *(float *)(f+4) );
-//   vmt_matrix_dump( h );
    vmt_matrix_free( h );
    bool ret = ! f[1];
-//   if ( ret )
-//      vmt_matrix_rows( result, f+2, result );
    vcp_storage_free( sh );
    return ret;
 }
