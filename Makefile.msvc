@@ -1,0 +1,53 @@
+!include Makefile.defs
+
+VKPATH=$(VK_SDK_PATH)
+VCPATH=..\vulcmp
+CCARGS=-I$(VCPATH)
+
+CC=cl $(CCARGS)
+GLSLC=$(VKPATH)\Bin\glslc.exe
+LN=link /dll /LIBPATH:"$(LIB)"
+RM=del /q
+EH=@echo
+# https://sourceforge.net/projects/xxd-for-windows/
+XXD=xxd 
+
+MMSVC=nmake /f Makefile.msvc
+VLIB=$(NAME).dll
+
+COMPS=ident. copy. add. clone. transpose. gauss. rows.
+
+build: $(VLIB)
+
+clean:
+	$(RM) $(VLIB) *.obj *.spv *.inc
+	cd test
+	$(MMSVC) clean
+
+test: build
+	cd test
+	$(MMSVC)
+
+help:
+	$(EH):
+	$(EH) Make targets:
+	$(EH):
+	$(EH) build: build library
+	$(EH) clean: clean directory
+	$(EH) test: run tests
+	$(EH):
+
+.comp.spv:
+	$(GLSLC) -o $@ $<
+
+.spv.inc:
+	$(XXD) -i $< > $@
+
+vulmat.obj: vulmat.c vulmat.h $(COMPS:.=.spv) $(COMPS:.=.inc)
+	$(CC) -c $O vulmat.c
+
+$(VLIB): vulmat.obj 
+	$(LN) vulmat.obj $(VCPATH)\vulcmp.obj $(VKPATH)\Lib\vulkan-1.lib
+
+.PHONY: test
+.SUFFIXES: .exe .lib .obj .c .inc .spv .comp

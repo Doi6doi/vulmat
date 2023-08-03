@@ -53,7 +53,7 @@ typedef struct Vmt__Vulmat {
 
 
 Vmt_Vulmat vmtVulmat = {
-   started: false
+   .started = false
 };
 
 typedef struct Vmt__Matrix {
