@@ -121,14 +121,13 @@ VmtMatrix vmt_matrix_create( uint32_t width, uint32_t height ) {
 
 /// set gauss parts
 bool vmt_gauss_parts( VcpTask t, uint32_t n ) {
-   vmtResult = VMT_NOMEM;
-   VcpPart * p = VMT_REALLOC( NULL, VcpPart, 4*n+1 );
-   if ( ! p ) return false;
-   VcpPart pid = { VMT_GDF(n),0,0, VMT_GDC(n)+1,n,1 };
-   VcpPart psr = { 0,0,1, 1,1,1 };
-   VcpPart psw = { 0,0,2, VMT_GDC(2*n), 1, 1};
-   VcpPart pch = { 0,0,3, VMT_GDC(2*n), n, 1};
-   VcpPart pcc = { 0,0,4, VMT_GDC(n), 1, 1};
+   vmtResult = VMT_TASKERR;
+   VcpPart pid = { VMT_GDF(n),0,0, VMT_GDC(n)+1,n,1, NULL };
+   VcpPart psr = { 0,0,1, 1,1,1, NULL };
+   VcpPart psw = { 0,0,2, VMT_GDC(2*n), 1, 1, NULL};
+   VcpPart pch = { 0,0,3, VMT_GDC(2*n), n, 1, NULL};
+   VcpPart pcc = { 0,0,4, VMT_GDC(n), 1, 1, NULL};
+   VcpPart * p = vcp_task_parts( t, 4*n+1 );
    p[0] = pid;
    for ( int i=0; i<n; ++i ) {
       int j = 4*i;
@@ -144,11 +143,6 @@ bool vmt_gauss_parts( VcpTask t, uint32_t n ) {
       p[j+2].baseX = p[j+3].baseX = p[j+4].baseX = VMT_GDF( i );
       p[j+2].countX = p[j+3].countX = VMT_GDC( 2*n-i )+1;
    }
-   vmtResult = VMT_EXECERR;
-   vcp_task_parts( t, 4*n+1, p );
-   p = VMT_REALLOC( p, VcpPart, 0 );
-   if ( VCP_SUCCESS != vcp_error() )
-      return false;
    vmtResult = VMT_SUCCESS;
    return true;
 }
@@ -156,7 +150,7 @@ bool vmt_gauss_parts( VcpTask t, uint32_t n ) {
 
 /// setup tasks
 bool vmt_setup( VmtTask vt, VcpTask t, VcpStorage * ss, uint32_t w, uint32_t h ) {
-   vcp_task_setup( t, ss, VMT_GDC(w), VMT_GDC(h), 1 );
+   vcp_task_setup( t, ss, 0, VMT_GDC(w), VMT_GDC(h), 1 );
    if ( VCP_SUCCESS != vcp_error() )
       return false;
    if ( vt_gauss == vt )
