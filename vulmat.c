@@ -150,7 +150,7 @@ bool vmt_gauss_parts( VcpTask t, uint32_t n ) {
 
 /// setup tasks
 bool vmt_setup( VmtTask vt, VcpTask t, VcpStorage * ss, uint32_t w, uint32_t h ) {
-   vcp_task_setup( t, ss, 0, VMT_GDC(w), VMT_GDC(h), 1 );
+   vcp_task_setup( t, ss, VMT_GDC(w), VMT_GDC(h), 1, NULL );
    if ( VCP_SUCCESS != vcp_error() )
       return false;
    if ( vt_gauss == vt )
@@ -163,7 +163,7 @@ void vmt_exec( VmtTask vt, VcpStorage * ss, uint32_t w, uint32_t h ) {
    vmtResult = VMT_TASKERR;
    VcpTask t = vmtVulmat.tasks[vt];
    if ( ! t ) {
-      t = vcp_task_create( vmtVulmat.vulcomp, tdd[vt], tdl[vt], VMT_MAIN, tds[vt] );
+      t = vcp_task_create( vmtVulmat.vulcomp, tdd[vt], tdl[vt], VMT_MAIN, tds[vt], 0 );
       if ( ! t ) return;
       vmtVulmat.tasks[vt] = t;
    }
