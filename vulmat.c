@@ -122,12 +122,12 @@ VmtMatrix vmt_matrix_create( uint32_t width, uint32_t height ) {
 /// set gauss parts
 bool vmt_gauss_parts( VcpTask t, uint32_t n ) {
    vmtResult = VMT_TASKERR;
-   VcpPart pid = { VMT_GDF(n),0,0, VMT_GDC(n)+1,n,1, NULL };
-   VcpPart psr = { 0,0,1, 1,1,1, NULL };
-   VcpPart psw = { 0,0,2, VMT_GDC(2*n), 1, 1, NULL};
-   VcpPart pch = { 0,0,3, VMT_GDC(2*n), n, 1, NULL};
-   VcpPart pcc = { 0,0,4, VMT_GDC(n), 1, 1, NULL};
-   VcpPart * p = vcp_task_parts( t, 4*n+1 );
+   Vcp_Part pid = { VMT_GDF(n),0,0, VMT_GDC(n)+1,n,1, NULL };
+   Vcp_Part psr = { 0,0,1, 1,1,1, NULL };
+   Vcp_Part psw = { 0,0,2, VMT_GDC(2*n), 1, 1, NULL};
+   Vcp_Part pch = { 0,0,3, VMT_GDC(2*n), n, 1, NULL};
+   Vcp_Part pcc = { 0,0,4, VMT_GDC(n), 1, 1, NULL};
+   Vcp_Part * p = vcp_task_parts( t, 4*n+1 );
    p[0] = pid;
    for ( int i=0; i<n; ++i ) {
       int j = 4*i;
@@ -174,7 +174,7 @@ void vmt_exec( VmtTask vt, VcpStorage * ss, uint32_t w, uint32_t h ) {
       ;
    if ( ! vcp_error() )
       vmtResult = VMT_SUCCESS;
-}
+} 
 
 
 VmtMatrix vmt_matrix_ident( uint32_t size ) {
