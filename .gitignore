@@ -4,7 +4,7 @@
 *.exe
 *.obj
 *.dll
-./Makefile
+Makefile
 libvulmat.so
 megsem
 **/ide.txt
