@@ -14,10 +14,10 @@
         tds[ vt_##s ] = n;
 
 typedef enum Vmt_Task { vt_ident, vt_copy, vt_add, vt_clone, vt_transpose,
-   vt_gauss, vt_rows } VmtTask;
+   vt_gauss, vt_rows, vt_mult } VmtTask;
 
 #define vt_first vt_ident
-#define vt_last vt_rows
+#define vt_last vt_mult
 
 unsigned char * tdd[ vt_last+1 ];
 uint32_t tdl[ vt_last+1 ];
@@ -30,6 +30,7 @@ uint32_t tds[ vt_last+1 ];
 #include "transpose.inc"
 #include "gauss.inc"
 #include "rows.inc"
+#include "mult.inc"
 
 void vmt_taskdata_init() {
    VMT_TASK( ident, 2 );
@@ -39,6 +40,7 @@ void vmt_taskdata_init() {
    VMT_TASK( transpose, 3 );
    VMT_TASK( gauss, 3 );
    VMT_TASK( rows, 3 );
+   VMT_TASK( mult, 5 );
 }
 
 int vmtResult = VMT_SUCCESS;
@@ -165,7 +167,7 @@ void vmt_exec( VmtTask vt, VcpStorage * ss, uint32_t w, uint32_t h ) {
    if ( ! t ) {
       t = vcp_task_create( vmtVulmat.vulcomp, tdd[vt], tdl[vt], VMT_MAIN, tds[vt], 0 );
       if ( ! t ) return;
-      vmtVulmat.tasks[vt] = t;
+      vmtVulmat.tasks[vt] = t; 
    }
    if ( ! vmt_setup( vt, t, ss, w, h )) return;
    vmtResult = VMT_EXECERR;
@@ -226,6 +228,17 @@ void vmt_matrix_add( VmtMatrix base, VmtMatrix delta ) {
    vmt_exec( vt_add, ss, base->width, base->height );
 }
 
+void vmt_matrix_mult( VmtMatrix left, VmtMatrix right, VmtMatrix result ) {
+   vmtResult = VMT_DIMENSION;
+   if ( left->width != right->height
+      || left->height != result->height
+      || right->width != result->width )
+      return;
+   VcpStorage ss[5] = { left->sDims, result->sDims, left->sVals, 
+	  right->sVals, result->sVals };
+   vmt_exec( vt_mult, ss, result->width, result->height );
+}
+
 
 VmtMatrix vmt_matrix_clone( VmtMatrix m ) {
    VmtMatrix ret = vmt_matrix_create( m->width, m->height );
@@ -271,6 +284,8 @@ void vmt_matrix_rows( VmtMatrix m, uint32_t * indices, VmtMatrix result ) {
    uint32_t * f = vcp_storage_address( s );
    f[0] = mw;
    f[1] = rh;
+   for (int i=0; i < rh; ++i)
+      f[i+2] = indices[i];
    VcpStorage ss[3] = { s, m->sVals, result->sVals };
    vmt_exec( vt_rows, ss, mw, rh );
 }

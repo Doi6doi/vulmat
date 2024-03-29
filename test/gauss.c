@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 int main() {
-   int n = 10;
+   int n = 100;
    VcpVulcomp v = vcp_init( "vmtgauss", VCP_VALIDATION );
    vmt_init( v );
    VmtMatrix m = vmt_matrix_ident( n );

@@ -9,7 +9,7 @@ Z=
 SPACE=$(Z) $(Z)
 TST_DIRS_SEP=$(subst $(SPACE),:,$(TST_DIRS))
 
-CC=gcc $(TST_DIRS:%=-I%) $(TST_DIRS:%=-L%)
+CC=gcc -g $(TST_DIRS:%=-I%) $(TST_DIRS:%=-L%)
 
 all: $(ALL:=.run)
 

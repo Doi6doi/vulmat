@@ -15,7 +15,7 @@ XXD=xxd
 MMSVC=nmake /f Makefile.msvc
 VLIB=$(NAME).dll
 
-COMPS=ident. copy. add. clone. transpose. gauss. rows.
+COMPS=ident. copy. add. clone. transpose. gauss. rows. mult.
 
 build: $(VLIB)
 
