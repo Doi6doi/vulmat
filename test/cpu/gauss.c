@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 int main() {
-   int n = 1500;
+   int n = 1000;
    VmcMatrix m = vmc_matrix_create( n, n );
    float * f = vmc_matrix_address( m );
    for ( int c=0; c < n; ++c )

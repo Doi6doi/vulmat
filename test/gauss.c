@@ -3,8 +3,9 @@
 #include <stdlib.h>
 
 int main() {
-   int n = 100;
+   int n = 1000;
    VcpVulcomp v = vcp_init( "vmtgauss", VCP_VALIDATION );
+//   VcpVulcomp v = vcp_init( "vmtgauss", 0 );
    vmt_init( v );
    VmtMatrix m = vmt_matrix_ident( n );
    VmtFloat * f = vmt_matrix_address( m );
