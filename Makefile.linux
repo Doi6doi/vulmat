@@ -5,9 +5,9 @@ VCP_INCLUDE=../vulcmp
 # vulcomp library directory
 VCP_LIB=../vulcmp
 
-COMPS=ident copy add clone transpose gauss rows mult
+COMPS=ident copy add transpose gauss rows mult
 
-CC=gcc -I$(VCP_INCLUDE) -L$(VCP_LIB)
+CC=gcc -g -I$(VCP_INCLUDE) -L$(VCP_LIB)
 GLSLC=glslc
 RM=rm -f
 EH=@echo
@@ -42,7 +42,7 @@ help:
 %.inc: %.spv
 	$(XXD) -i $< > $@
 
-%.spv: %.comp
+%.spv: %.comp vulmat_comp.h
 	$(GLSLC) -o $@ $<
 
 vulmat.o: vulmat.c vulmat.h $(COMPS:=.inc)

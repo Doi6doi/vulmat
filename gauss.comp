@@ -1,20 +1,14 @@
 #version 450
+#include "vulmat_comp.h"
 
-layout (local_size_x=16, local_size_y=1, local_size_z=1) in;
+layout (local_size_x=UGR, local_size_y=UGR, local_size_z=1) in;
+
+layout (push_constant) uniform Constants {
+   VmtGaussPars p;
+};
 
 layout( binding = 0 ) buffer Data {
-   /// size
-   uint n;
-   /// termination
-   bool quit;
-   /// elimination phase
-   uint phase;
-   /// chosen row
-   uint best;
-   /// epsilon value for zero check
-   float epsilon;
-   /// pivot value
-   float pivot;
+   VmtGaussData data;
 };
 
 layout( binding = 1 ) buffer Base {
@@ -25,84 +19,88 @@ layout( binding = 2 ) buffer Result {
    float result[];
 };
 
+uint n;
+
 /// identity matrix in result
 void ident() {
    uint x = gl_GlobalInvocationID.x;
+   if ( n <= x ) return;
    uint y = gl_GlobalInvocationID.y;
-   if ( n <= x && x < 2*n )
-      result[ y*n+x-n ] = (x-n == y ? 1.0: 0.0 );
+   if ( n <= y ) return;
+   result[ y*n+x ] = (x == y ? 1.0: 0.0 );
 }   
 
 /// find best element in column and inc phase
 void search() {
    if ( uvec2(0,0) != gl_GlobalInvocationID.xy )
       return;
-   uint x = ++ phase;
-   for (uint i=x; i<n; ++i) {
-      float p = base[i*n+x];
-      if (epsilon < abs(p)) {
-         best = i;
-         pivot = p;
+   uint x = p.phase;
+   for (uint y=x; y<n; ++y) {
+      float q = base[y*n+x];
+      if (p.epsilon < abs(q)) {
+         data.best = y;
+         data.pivot = q;
          return;
       }
    }
-   quit = true;
+   data.quit = 1;
 }
 
 /// swap best row to phaseth and divide
 void swap() {
    if ( 0 != gl_GlobalInvocationID.y ) return;
-   uint y = phase;
-   uint x = gl_GlobalInvocationID.x;
-   if ( x < y || 2*n <= x ) return;
-   if ( x < n ) {
-      if ( best == y ) {
-         base[y*n+x] /= pivot;
+   uint y = p.phase;
+   uint x = gl_GlobalInvocationID.x + y;
+   if ( 2*p.size <= x ) return;
+   if ( x < p.size ) {
+      if ( data.best == y ) {
+         base[y*n+x] /= data.pivot;
       } else {
          float save = base[y*n+x];
-         base[y*n+x] = base[best*n+x]/pivot;
-         base[best*n+x] = save;
+         base[y*n+x] = base[data.best*n+x]/data.pivot;
+         base[data.best*n+x] = save;
       }
    } else {
       uint j = x-n;
-      if ( best == y ) {
-         result[y*n+j] /= pivot;
+      if ( data.best == y ) {
+         result[y*n+j] /= data.pivot;
       } else {
          float save = result[y*n+j];
-         result[y*n+j] = result[best*n+j]/pivot;
-         result[best*n+j] = save;
+         result[y*n+j] = result[data.best*n+j]/data.pivot;
+         result[data.best*n+j] = save;
       }
    }
 }
 
 /// chnage most elements
 void change() {
-   uint p = phase;
-   uint x = gl_GlobalInvocationID.x;
-   if ( x <= p || 2*n <= x ) return;
+   uint ph = p.phase;
+   uint x = gl_GlobalInvocationID.x + ph;
+   if ( 2*n <= x ) return;
    uint y = gl_GlobalInvocationID.y;
-   if ( p == y || n <= y ) return;
-   float q = base[ y*n+p ];
+   if ( ph == y || n <= y ) return;
+   float q = base[ y*n+ph ];
    if ( x < n ) {
-      base[ y*n+x ] -= base[ p*n+x ]*q;
+      base[ y*n+x ] -= base[ ph*n+x ]*q;
    } else {
       uint j = x-n;
-      result[ y*n+j ] -= result[ p*n+j ]*q;
+      result[ y*n+j ] -= result[ ph*n+j ]*q;
    } 
 }
 
 /// change phaseth col elements
 void changeCol() {
-   uint x = phase;
-   uint y = gl_GlobalInvocationID.x;
-   if ( y == x || y >= n ) return;
+   uint x = p.phase;
+   uint y = gl_GlobalInvocationID.y;
+   if ( y == x || n <= y ) return;
    base[ y*n+x ] = 0;
 }
 
 
 void main() {
-   if ( quit ) return;
-   switch ( gl_GlobalInvocationID.z ) {
+   if ( 0 != data.quit ) return;
+   n = p.size;
+   switch ( p.method ) {
       case 0: ident(); break;
       case 1: search(); break;
       case 2: swap(); break;

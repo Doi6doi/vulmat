@@ -1,33 +1,31 @@
 #version 450
+#include "vulmat_comp.h"
 
-layout (local_size_x=16, local_size_y=16, local_size_z=1) in;
+layout (local_size_x=UGR, local_size_y=UGR, local_size_z=1) in;
 
-layout( binding = 0 ) readonly buffer LeftDim {
-   uint lw, lh;
+layout (push_constant) uniform Constants {
+   VmtMultPars p;
 };
 
-layout( binding = 1 ) readonly buffer ResultDim {
-   uint rw, rh;
-};
-
-layout( binding = 2 ) readonly buffer Left {
+layout( binding = 0 ) readonly buffer Left {
    float left[];
 };
 
-layout( binding = 3 ) readonly buffer Right {
+layout( binding = 1 ) readonly buffer Right {
    float right[];
 };
 
-layout( binding = 4 ) writeonly buffer Result {
+layout( binding = 2 ) writeonly buffer Result {
    float result[];
 };
 
 void main() {
    uint x = gl_GlobalInvocationID.x;
+   if ( p.width <= x ) return;
    uint y = gl_GlobalInvocationID.y;
-   if ( rw <= x || rh <= y ) return;
+   if ( p.height <= y ) return;
    float r = 0.0;
-   for (uint i=0; i<lw; ++i)
-      r += left[ y*lw+i ] * right[ i*rw + x ];
-   result[ y*rw+x ] = r;
+   for (uint i=0; i<p.axis; ++i)
+      r += left[ y*p.axis+i ] * right[ i*p.width + x ];
+   result[ y*p.width+x ] = r;
 }

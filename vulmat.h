@@ -4,9 +4,10 @@
 #include "vulcmp.h"
 
 typedef float VmtFloat;
-typedef struct Vmt__Matrix * VmtMatrix;
+typedef struct VmtMatrix * VmtMatrix;
 
 #define VMT_SUCCESS         0
+#define VMT_HOSTMEM    VCP_HOSTMEM
 #define VMT_ALREADY    -20001
 #define VMT_TASKERR    -20002
 #define VMT_STORAGEERR -20003

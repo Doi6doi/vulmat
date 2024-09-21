@@ -1,23 +1,24 @@
 #version 450
+#include "vulmat_comp.h"
 
-layout (local_size_x=16, local_size_y=16, local_size_z=1) in;
+layout (local_size_x=UGR, local_size_y=UGR, local_size_z=1) in;
 
-layout( binding = 0 ) readonly buffer Dimensions {
-   uint w, h;
+layout (push_constant) uniform Constants {
+   VmtDims p;
 };
 
-layout( binding = 1 ) readonly buffer Base {
+layout( binding = 0 ) readonly buffer Base {
    float base[];
 };
 
-layout( binding = 2 ) buffer Result {
+layout( binding = 1 ) buffer Result {
    float result[];
 };
 
 void main() {
    uint x = gl_GlobalInvocationID.x;
+   if ( p.width <= x ) return;
    uint y = gl_GlobalInvocationID.y;
-   uint i = y*w+x;
-   uint j = x*h+y;
-   result[j] = base[i];
+   if ( p.height <= y ) return;
+   result[ x*p.height + y ] = base[ y*p.width+x ];
 }
