@@ -8,7 +8,7 @@ typedef struct VmtMatrix * VmtMatrix;
 
 #define VMT_SUCCESS         0
 #define VMT_HOSTMEM    VCP_HOSTMEM
-#define VMT_ALREADY    -20001
+#define VMT_ALREADY    -20001	
 #define VMT_TASKERR    -20002
 #define VMT_STORAGEERR -20003
 #define VMT_MATERR     -20004
@@ -45,8 +45,6 @@ void vmt_matrix_copy( VmtMatrix src, uint32_t sx, uint32_t sy,
 void vmt_matrix_add( VmtMatrix base, VmtMatrix delta );
 /// transpose
 void vmt_matrix_transpose( VmtMatrix m, VmtMatrix result );
-/// subtraction
-void vmt_matrix_sub( VmtMatrix base, VmtMatrix delta );
 /// multiplication
 void vmt_matrix_mult( VmtMatrix left, VmtMatrix right, VmtMatrix result );
 /// permutate rows

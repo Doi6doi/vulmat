@@ -91,14 +91,6 @@ Matrix addition. Matrix dimensions must match.
 
 ---
 ```c
-void vmt_matrix_sub( VmtMatrix base, VmtMatrix delta )
-```
-Matrix subtraction. Matrix dimensions must match.
-- `base`: base matrix. It will change with `delta`
-- `delta`: the matrix which will be subtracted from `base`
-
----
-```c
 void vmt_matrix_mult( VmtMatrix left, VmtMatrix right, VmtMatrix result )
 ```
 Matrix multiplication. The following values must be equal:
@@ -166,9 +158,17 @@ Permutate rows of matrix
 - `indices`: indices of matrix rows (with m.height items)
 - `result`: matrix with permutated rows
 
+---
+```c
+void vmt_matrix_dump( VmtMatrix m )
+```
+Prints matrix to standard output
+- `m`: matrix to print
+
 ## Error codes
 
 - `VMT_SUCCESS`: last operation terminated successfully.
+- `VMT_HOSTMEM`: host memory allocation error
 - `VMT_ALREADY`: vulmat already initialized with `vmt_init`
 - `VMT_TASKERR`: error during vulcmp task setup
 - `VMT_STORAGEERR`: error during vulcmp storage setup
@@ -178,7 +178,7 @@ Permutate rows of matrix
 - `VMT_DIMENSION`: matrix size mismatch in operation
 
 ## Example code
-   
+
 A simple vulmat program example:
 
 ```c
@@ -198,4 +198,4 @@ vmt_matrix_dump( m );
 vmt_done();
 vcp_done(v);
 ```
-    
+
